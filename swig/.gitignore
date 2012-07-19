@@ -1,0 +1,8 @@
+/.deps
+/.libs
+/*.la
+/*.lo
+/Makefile.in
+/Makefile
+/dvb_swig.cc
+/dvb_swig.py

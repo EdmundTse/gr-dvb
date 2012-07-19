@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<block>
+  <name>DVB Randomizer</name>
+  <key>dvb_randomizer_pp</key>
+  <category>DVB</category>
+  <import>import dvb</import>
+  <make>dvb.randomizer_pp()</make>
+
+  <sink>
+    <name>in</name>
+    <type>char</type>
+  </sink>
+
+  <source>
+    <name>out</name>
+    <type>char</type>
+  </source>
+</block>
