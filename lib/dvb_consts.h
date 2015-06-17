@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2010 Edmund Tse
+ *               2015 Santiago Piccinini
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),

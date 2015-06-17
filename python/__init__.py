@@ -1,51 +1,62 @@
+# Copyright (c) 2010 Edmund Tse
+#               2015 Santiago Piccinini
 #
-# Copyright 2008,2009,2010 Free Software Foundation, Inc.
-# 
-# This application is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3, or (at your option)
-# any later version.
-# 
-# This application is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
 #
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
-# The presence of this file turns this directory into a Python package
+'''
+This is the GNU Radio DVB module. Place your Python package
+description here (python/__init__.py).
+'''
 
-# ----------------------------------------------------------------
-# Temporary workaround for ticket:181 (swig+python problem)
-import sys
-_RTLD_GLOBAL = 0
+# import swig generated symbols into the dvb namespace
 try:
-    from dl import RTLD_GLOBAL as _RTLD_GLOBAL
+	# this might fail if the module is python-only
+	from dvb_swig import *
 except ImportError:
-    try:
-	from DLFCN import RTLD_GLOBAL as _RTLD_GLOBAL
-    except ImportError:
 	pass
-    
-if _RTLD_GLOBAL != 0:
-    _dlopenflags = sys.getdlopenflags()
-    sys.setdlopenflags(_dlopenflags|_RTLD_GLOBAL)
-# ----------------------------------------------------------------
 
+# MPEG Transport Stream constants
+MPEG_TS_SYNC_BYTE	= 0x47
+MPEG_TS_PKT_LENGTH				= 188
+MPEG_TS_ERROR_BIT	= 0x80	# top bit of byte after SYNC
 
-# import swig generated symbols into the howto namespace
-from dvb_swig import *
+# Reed-Solomon parameters
+DVB_RS_ENCODED_LENGTH	= 204	# i.e. RS(204,188)
+DVB_RS_PAD_LENGTH		= 51	# Shortened from RS(255,239) code by padding with 51 zeros
+DVB_RS_SYMSIZE			= 8	# Bits per symbol
+DVB_RS_GFPOLY			= 0x11d# Extended Galois field generator polynomial coefficients, with the 0th coefficient in the low order bit. The polynomial must be primitive.
+DVB_RS_FCR				= 0	# First consecutive root of the generator polynomial in index form
+DVB_RS_PRIM			= 0x01	# Primitive element to generate polynomial roots
+DVB_RS_NROOTS			= 16	# Number of generator roots = number of parity symbols
 
-# import any pure python here
-from dvb_interleaver_bb import *
-from dvb_s_modulator import *
-from dvb_convolutional_encoder_bb import *
+# Interleaver parameters
+DVB_INTERLEAVER_I		= 12	# Interleaving depth
+DVB_INTERLEAVER_M		= 17	# Cell size
 
-# ----------------------------------------------------------------
-# Tail of workaround
-if _RTLD_GLOBAL != 0:
-    sys.setdlopenflags(_dlopenflags)      # Restore original flags
-# ----------------------------------------------------------------
+# Randomiser constants
+MPEG_TS_SYNC_BYTE_INV = MPEG_TS_SYNC_BYTE ^ 0xFF
+DVB_RANDOMIZER_INVERTED_SYNC_PERIOD = 8
+DVB_RANDOMIZER_PERIOD	= MPEG_TS_PKT_LENGTH * DVB_RANDOMIZER_INVERTED_SYNC_PERIOD
+
+k = 1
+n = 2
+G_array = [0171, 0133]
+K = 204 * 8
+dimensionality = 2
+#c_array[] = {0.7, 0.7, 0.7, -0.7, -0.7, 0.7, -0.7, -0.7};

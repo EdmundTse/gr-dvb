@@ -1,4 +1,5 @@
 # Copyright (c) 2010 Edmund Tse
+#               2015 Santiago Piccinini
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,15 +21,17 @@
 
 #!/usr/bin/env python
 
-from gnuradio import gr, blks2
+from gnuradio import digital
+from gnuradio import gr
 from math import pi
-import dvb_swig
+import dvb
 
 M = 4						# QPSK is of order 4
 nfilts = 32
 
 # Adapt QAM constellation to QPSK with absolute Gray mapping
-mod_constellation = map(lambda x: -x * 0.707 , blks2.qam.constellation[M])
+mod_constellation = digital.qam.qam_constellation(constellation_points=M)
+
 
 # Receiver parameters
 (fmin, fmax) = (-0.5, 0.5)	# Allow Costas frequency swing of +/- half of the sample rate

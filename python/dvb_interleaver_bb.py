@@ -20,8 +20,8 @@
 
 #!/usr/bin/env python
 
-from gnuradio import gr
-import dvb_swig
+from gnuradio import gr, blocks
+import dvb
 
 INTERLEAVER_M = 17		# Length of each shift register cell (DVB standard)
 INTERLEAVER_I = 12		# Interleaving depth (DVB standard)
@@ -36,10 +36,10 @@ class interleaver_bb(gr.hier_block2):
 				gr.io_signature(1, 1, gr.sizeof_char),	# Input signature
 				gr.io_signature(1, 1, gr.sizeof_char))	# Output signature
 
-		self.demux = gr.stream_to_streams(gr.sizeof_char, INTERLEAVER_I)
-		self.shift_registers = [dvb_swig.fifo_shift_register_bb(INTERLEAVER_M * j)
+		self.demux = blocks.stream_to_streams(gr.sizeof_char, INTERLEAVER_I)
+		self.shift_registers = [dvb.fifo_shift_register_bb(INTERLEAVER_M * j)
 				for j in range(INTERLEAVER_I)]
-		self.mux = gr.streams_to_stream(gr.sizeof_char, INTERLEAVER_I)
+		self.mux = blocks.streams_to_stream(gr.sizeof_char, INTERLEAVER_I)
 
 		self.connect(self, self.demux)
 		for j in range(INTERLEAVER_I):
@@ -55,14 +55,14 @@ class deinterleaver_bb(gr.hier_block2):
 				gr.io_signature(1, 1, gr.sizeof_char),	# Input signature
 				gr.io_signature(1, 1, gr.sizeof_char))	# Output signature
 
-		self.demux = gr.stream_to_streams(gr.sizeof_char, INTERLEAVER_I)
-		self.shift_registers = [dvb_swig.fifo_shift_register_bb(INTERLEAVER_M * j)
+		self.demux = blocks.stream_to_streams(gr.sizeof_char, INTERLEAVER_I)
+		self.shift_registers = [dvb.fifo_shift_register_bb(INTERLEAVER_M * j)
 				for j in range(INTERLEAVER_I)]
 		# Deinterleaver shift registers are reversed compared to interleaver
 		self.shift_registers.reverse()
-		self.mux = gr.streams_to_stream(gr.sizeof_char, INTERLEAVER_I)
+		self.mux = blocks.streams_to_stream(gr.sizeof_char, INTERLEAVER_I)
 		# Remove the uninitialised zeros that come out of the deinterleaver
-		self.skip = gr.skiphead(gr.sizeof_char, DELAY)
+		self.skip = blocks.skiphead(gr.sizeof_char, DELAY)
 
 		self.connect(self, self.demux)
 		for j in range(INTERLEAVER_I):

@@ -1,4 +1,5 @@
 # Copyright (c) 2010 Edmund Tse
+#               2015 Santiago Piccinini
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,8 +21,8 @@
 
 #!/usr/bin/env python
 
-from gnuradio import gr, trellis
-import dvb_swig
+from gnuradio import gr, trellis, blocks
+import dvb
 
 # This is equal to dvb.G_array; works around C++ type mapping
 G = (0171, 0133)
@@ -38,7 +39,7 @@ class convolutional_encoder_bb(gr.hier_block2):
 				gr.io_signature(1, 1, gr.sizeof_char),	# Input signature
 				gr.io_signature(1, 1, gr.sizeof_char))	# Output signature
 
-		self.encoder = trellis.encoder_bb(trellis.fsm(dvb_swig.k, dvb_swig.n, G), dvb_swig.dimensionality)
-		self.unpack = gr.unpack_k_bits_bb(dvb_swig.dimensionality)
+		self.encoder = trellis.encoder_bb(trellis.fsm(dvb.k, dvb.n, G), dvb.dimensionality)
+		self.unpack = blocks.unpack_k_bits_bb(dvb.dimensionality)
 
 		self.connect(self, self.encoder, self.unpack, self)
