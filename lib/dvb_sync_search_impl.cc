@@ -112,6 +112,7 @@ bool dvb_sync_search::process(const unsigned char &input)
 					{
 						if (--cl == 0)
 						{
+							have_output = false;
 							_mode = Unlocked;
 							std::cout << "Sync decoder: Unlocked" << std::endl;
 							fast_forward = 1;	// No longer synced, so read in bit by bit

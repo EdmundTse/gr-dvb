@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from gnuradio import gr, gr_unittest, trellis
+from gnuradio import gr, gr_unittest, trellis, digital
 import dvb_swig
 import dvb_interleaver_bb
 import dvb_convolutional_encoder_bb
@@ -407,7 +407,7 @@ class qa_dvb(gr_unittest.TestCase):
 		repack2 = gr.packed_to_unpacked_bb(2, gr.GR_MSB_FIRST)
 		mapper = gr.chunks_to_symbols_bf(constellation, dvb_swig.dimensionality)
 		viterbi = trellis.viterbi_combined_fb(trellis.fsm(dvb_swig.k, dvb_swig.n, dvb_convolutional_encoder_bb.G),
-				dvb_swig.K, -1, -1, dvb_swig.dimensionality, constellation, trellis.TRELLIS_EUCLIDEAN)
+				dvb_swig.K, -1, -1, dvb_swig.dimensionality, constellation, digital.TRELLIS_EUCLIDEAN)
 		pack = gr.unpacked_to_packed_bb(1, gr.GR_MSB_FIRST)
 		dst = gr.vector_sink_b()
 

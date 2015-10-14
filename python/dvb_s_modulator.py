@@ -20,22 +20,23 @@
 
 #!/usr/bin/env python
 
-from gnuradio import gr, blks2
+from gnuradio import gr, digital
 from math import pi
 import dvb_swig
 
 M = 4						# QPSK is of order 4
 nfilts = 32
 
-# Adapt QAM constellation to QPSK with absolute Gray mapping
-mod_constellation = map(lambda x: -x * 0.707 , blks2.qam.constellation[M])
+mod_constellation = digital.constellation_qpsk()
 
 # Receiver parameters
 (fmin, fmax) = (-0.5, 0.5)	# Allow Costas frequency swing of +/- half of the sample rate
 freq_alpha = 0.01			# FLL alpha gain
+freq_bw = 0.035				# Will be overriden by set_alpha(), set_beta()
 timing_alpha = 0.10			# Costas loop gain for frequency adjustments
 timing_beta = 0.01			# Costas loop gain for phase adjustments
 phase_alpha = 0.01
+phase_bw = 0.035			# Will be overriden by set_alpha(), set_beta()
 
 class s_modulator_bc(gr.hier_block2):
 	"""
@@ -93,8 +94,12 @@ class s_demodulator_cc(gr.hier_block2):
 
 		# Frequency correction with band-edge filters FLL
 		freq_beta = freq_alpha * freq_alpha / 4
-		self.freq_recov = gr.fll_band_edge_cc(omega, dvb_swig.RRC_ROLLOFF_FACTOR, 11 * int(omega), freq_alpha, freq_beta)
-		self.receiver = gr.mpsk_receiver_cc(M, 0, freq_alpha, freq_beta, fmin, fmax, mu, gain_mu, omega, gain_omega, omega_relative_limit)
+		self.freq_recov = digital.fll_band_edge_cc(omega, dvb_swig.RRC_ROLLOFF_FACTOR, 11 * int(omega), freq_bw)
+		self.freq_recov.set_alpha(freq_alpha)
+		self.freq_recov.set_beta(freq_beta)
+		self.receiver = digital.mpsk_receiver_cc(M, 0, freq_bw, fmin, fmax, mu, gain_mu, omega, gain_omega, omega_relative_limit)
+		self.receiver.set_alpha(freq_alpha)
+		self.receiver.set_beta(freq_beta)
 		self.rotate = gr.multiply_const_cc(0.707 + 0.707j)
 
 		self.connect(self, self.agc, self.freq_recov, self.receiver, self.rotate, self)
@@ -120,11 +125,14 @@ class s_demodulator2_cc(gr.hier_block2):
 
 		# Frequency correction with band-edge filters FLL
 		freq_beta = freq_alpha * freq_alpha / 4
-		self.freq_recov = gr.fll_band_edge_cc(
+		self.freq_recov = digital.fll_band_edge_cc(
 				samples_per_symbol,
 				dvb_swig.RRC_ROLLOFF_FACTOR,
 				11 * int(samples_per_symbol),	# Size of the filter in taps
-				freq_alpha, freq_beta)
+				freq_bw)
+		self.freq_recov.set_alpha(freq_alpha)
+		self.freq_recov.set_beta(freq_beta)
+
 
 		# Symbol timing recovery with RRC data filter
 		ntaps = 11 * int(samples_per_symbol * nfilts)
@@ -140,6 +148,8 @@ class s_demodulator2_cc(gr.hier_block2):
 
 		# Perform phase / fine frequency correction using Costas PLL
 		phase_beta  = phase_alpha * phase_alpha / 4
-		self.phase_recov = gr.costas_loop_cc(phase_alpha, phase_beta, fmax, fmin, M)
+		self.phase_recov = digital.costas_loop_cc(phase_bw, M)
+		self.phase_recov.set_alpha(phase_alpha)
+		self.phase_recov.set_beta(phase_beta)
 
 		self.connect(self, self.agc, self.freq_recov, self.time_recov, self.phase_recov, self)
